@@ -8,12 +8,16 @@ library(readtext)
 library(flextable)
 library(webdriver)
 
-install.packages("remotes")
-remotes::install_github("rlesur/klippy")
+#this should only need to be installed once. Uncomment if your machine requires
+#the packages klippy and remote
+
+#install.packages("remotes")
+#remotes::install_github("rlesur/klippy")
 # activate klippy for copy-to-clipboard button
 klippy::klippy()
 
 page_numbers <- 1:272
+page_numbers <- 1:10
 base_url <- "https://www.theguardian.com/world/egypt?page="
 paging_urls <- paste0(base_url, page_numbers)
 
@@ -67,7 +71,6 @@ scrape_guardian_article <- function(url) {
 
 
 #scrape all the data into one large dataframe
-
 df = data.frame()
 
 for (url in all_links) {
@@ -75,5 +78,10 @@ for (url in all_links) {
   df = rbind(df, output)
 }
 
+#remove NA entries in content and title, ie. videos and audio
+df <- df[!(is.na(df$content) | df$content==""), ]
+df <- df[!(is.na(df$content) | df$title ==""), ]
 
-
+#remove some fluffs
+err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
+df[] <- lapply(df, gsub, pattern = err1, replacement = "")
