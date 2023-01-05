@@ -17,7 +17,10 @@ library(webdriver)
 klippy::klippy()
 
 page_numbers <- 1:272
-page_numbers <- 1:10
+
+#uncomment for testing
+#page_numbers <- 1:5
+
 base_url <- "https://www.theguardian.com/world/egypt?page="
 paging_urls <- paste0(base_url, page_numbers)
 
