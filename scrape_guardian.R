@@ -8,18 +8,18 @@ library(readtext)
 library(flextable)
 library(webdriver)
 
-#this should only need to be installed once. Uncomment if your machine requires
-#the packages klippy and remote
+# this should only need to be installed once. Uncomment if your machine requires
+# the packages klippy and remote
 
-#install.packages("remotes")
-#remotes::install_github("rlesur/klippy")
+# install.packages("remotes")
+# remotes::install_github("rlesur/klippy")
 # activate klippy for copy-to-clipboard button
 klippy::klippy()
 
 page_numbers <- 1:272
 
-#uncomment for testing
-#page_numbers <- 1:5
+# uncomment for testing
+# page_numbers <- 1:5
 
 base_url <- "https://www.theguardian.com/world/egypt?page="
 paging_urls <- paste0(base_url, page_numbers)
@@ -32,7 +32,7 @@ for (url in paging_urls) {
   links <- html_document %>%
     html_nodes(xpath = "//div[contains(@class, 'fc-item__container')]/a") %>%
     html_attr(name = "href")
-  
+
   # append links to vector of all links
   all_links <- c(all_links, links)
 }
@@ -54,11 +54,11 @@ scrape_guardian_article <- function(url) {
   # extract date
   date <- url %>%
     stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
-  
+
   content <- html_document %>%
     rvest::html_element("#maincontent") %>%
     rvest::html_text()
-  
+
   # generate data frame from results
   article <- data.frame(
     url = url,
@@ -67,24 +67,27 @@ scrape_guardian_article <- function(url) {
     body = text,
     content = content
   )
-  
+
   return(article)
-  
+
 }
 
 
-#scrape all the data into one large dataframe
-df = data.frame()
+# scrape all the data into one large dataframe
+df <- data.frame()
 
 for (url in all_links) {
-  output <-scrape_guardian_article(url)
-  df = rbind(df, output)
+  output <- scrape_guardian_article(url)
+  df <- rbind(df, output)
 }
 
-#remove NA entries in content and title, ie. videos and audio
-df <- df[!(is.na(df$content) | df$content==""), ]
-df <- df[!(is.na(df$content) | df$title ==""), ]
+# remove NA entries in content and title, ie. videos and audio
+df <- df[!(is.na(df$content) | df$content == ""), ]
+df <- df[!(is.na(df$content) | df$title == ""), ]
 
-#remove some fluffs
-err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
+# remove some fluffs
+err1 <- "Show key events onlyPlease turn on JavaScript to use this feature"
 df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+
+# save corpus
+save(df, file = "cache/corpus.rds")
