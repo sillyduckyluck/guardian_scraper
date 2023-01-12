@@ -7,6 +7,7 @@ library(rvest)
 library(readtext)
 library(flextable)
 library(webdriver)
+library(dplyr)
 
 #this should only need to be installed once. Uncomment if your machine requires
 #the packages klippy and remote
@@ -16,13 +17,15 @@ library(webdriver)
 # activate klippy for copy-to-clipboard button
 klippy::klippy()
 
-page_numbers <- 1:272
+page_numbers <- 1:200
 
 #uncomment for testing
-page_numbers <- 1:5
+#page_numbers <- 1:5
 
-base_url <- "https://www.theguardian.com/world/egypt?page="
+home_url <- "https://obamawhitehouse.archives.gov/"
+base_url <- "https://obamawhitehouse.archives.gov/briefing-room/speeches-and-remarks?term_node_tid_depth=31&page="
 paging_urls <- paste0(base_url, page_numbers)
+
 
 all_links <- NULL
 for (url in paging_urls) {
@@ -30,16 +33,17 @@ for (url in paging_urls) {
   html_document <- read_html(url)
   # extract links to articles
   links <- html_document %>%
-    html_nodes(xpath = "//div[contains(@class, 'fc-item__container')]/a") %>%
+    html_nodes(xpath = "//h3[contains(@class, 'field-content')]/a") %>%
     html_attr(name = "href")
+  
+  
   
   # append links to vector of all links
   all_links <- c(all_links, links)
 }
 
 scrape_guardian_article <- function(url) {
-
-  # read raw html
+  url <- paste0(home_url, url)
   html_document <- read_html(url)
   # extract title
   title <- html_document %>%
@@ -54,7 +58,7 @@ scrape_guardian_article <- function(url) {
     stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
   
   content <- html_document %>%
-    rvest::html_element("#maincontent") %>%
+    rvest::html_element("#content-start") %>%
     rvest::html_text()
   
   # generate data frame from results
@@ -75,14 +79,21 @@ scrape_guardian_article <- function(url) {
 df = data.frame()
 
 for (url in all_links) {
+  vibe <- 'fuk'
   output <-scrape_guardian_article(url)
   df = rbind(df, output)
 }
 
 #remove NA entries in content and title, ie. videos and audio
-df <- df[!(is.na(df$content) | df$content==""), ]
-df <- df[!(is.na(df$content) | df$title ==""), ]
+#df <- df[!(is.na(df$content) | df$content==""), ]
+#df <- df[!(is.na(df$content) | df$title ==""), ]
 
 #remove some fluffs
-err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
-df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+#err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
+#df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+
+
+#filter based on keyterms
+keywords <- "Egypt"
+filtered_df <- df %>% filter(grepl(keywords, content))
+
