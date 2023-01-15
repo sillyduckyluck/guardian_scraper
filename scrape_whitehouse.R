@@ -17,10 +17,10 @@ library(dplyr)
 # activate klippy for copy-to-clipboard button
 klippy::klippy()
 
-page_numbers <- 1:200
+page_numbers <- 1:472
 
-#uncomment for testing
-#page_numbers <- 1:5
+# uncomment for testing
+# page_numbers <- 1:5
 
 home_url <- "https://obamawhitehouse.archives.gov/"
 base_url <- "https://obamawhitehouse.archives.gov/briefing-room/speeches-and-remarks?term_node_tid_depth=31&page="
@@ -54,8 +54,11 @@ scrape_guardian_article <- function(url) {
     rvest::html_node("p") %>%
     rvest::html_text(trim = T)
   # extract date
-  date <- url %>%
-    stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
+  date <- html_document %>%
+    rvest::html_element("#press_article_date_created") %>%
+    rvest::html_text()
+  # date <- url %>%
+    # stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
   
   content <- html_document %>%
     rvest::html_element("#content-start") %>%
@@ -79,7 +82,6 @@ scrape_guardian_article <- function(url) {
 df = data.frame()
 
 for (url in all_links) {
-  vibe <- 'fuk'
   output <-scrape_guardian_article(url)
   df = rbind(df, output)
 }

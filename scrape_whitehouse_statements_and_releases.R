@@ -7,6 +7,7 @@ library(rvest)
 library(readtext)
 library(flextable)
 library(webdriver)
+library(dplyr)
 
 #this should only need to be installed once. Uncomment if your machine requires
 #the packages klippy and remote
@@ -16,13 +17,13 @@ library(webdriver)
 # activate klippy for copy-to-clipboard button
 klippy::klippy()
 
-page_numbers <- 1:5
+page_numbers <- 1:1176
 
-#uncomment for testing
-#page_numbers <- 1:5
+# uncomment for testing
+# page_numbers <- 1:5
 
 home_url <- "https://obamawhitehouse.archives.gov/"
-base_url <- "https://obamawhitehouse.archives.gov/briefing-room/press-briefings?term_node_tid_depth=36&page=1"
+base_url <- "https://obamawhitehouse.archives.gov/briefing-room/statements-and-releases?term_node_tid_depth=41&page="
 paging_urls <- paste0(base_url, page_numbers)
 
 
@@ -53,8 +54,11 @@ scrape_guardian_article <- function(url) {
     rvest::html_node("p") %>%
     rvest::html_text(trim = T)
   # extract date
-  date <- url %>%
-    stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
+  date <- html_document %>%
+    rvest::html_element("#press_article_date_created") %>%
+    rvest::html_text()
+  # date <- url %>%
+  # stringr::str_replace_all(".*([0-9]{4,4}/[a-z]{3,4}/[0-9]{1,2}).*", "\\1")
   
   content <- html_document %>%
     rvest::html_element("#content-start") %>%
@@ -89,3 +93,8 @@ for (url in all_links) {
 #remove some fluffs
 #err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
 #df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+
+
+#filter based on keyterms
+keywords <- "Egypt"
+filtered_df <- df %>% filter(grepl(keywords, content))
