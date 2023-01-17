@@ -82,8 +82,10 @@ scrape_guardian_article <- function(url) {
 df = data.frame()
 
 for (url in all_links) {
-  output <-scrape_guardian_article(url)
-  df = rbind(df, output)
+  try({
+    output <-scrape_guardian_article(url)
+    df = rbind(df, output)
+  }, silent = TRUE)
 }
 
 #remove NA entries in content and title, ie. videos and audio
@@ -98,3 +100,6 @@ for (url in all_links) {
 #filter based on keyterms
 keywords <- "Egypt"
 filtered_df <- df %>% filter(grepl(keywords, content))
+
+# save corpus
+save(df, file = "cache/corpus_wh_statements.rds")

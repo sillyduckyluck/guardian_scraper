@@ -99,3 +99,6 @@ for (url in all_links) {
 keywords <- "Egypt"
 filtered_df <- df %>% filter(grepl(keywords, content))
 
+# save corpus
+save(df, file = "cache/corpus_wh_speech.rds")
+

@@ -89,3 +89,6 @@ for (url in all_links) {
 #remove some fluffs
 #err1 = "Show key events onlyPlease turn on JavaScript to use this feature"
 #df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+
+# save corpus
+save(df, file = "cache/corpus_wh_pressbrief.rds")
