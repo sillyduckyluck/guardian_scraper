@@ -77,8 +77,10 @@ scrape_guardian_article <- function(url) {
 df <- data.frame()
 
 for (url in all_links) {
+  try({
   output <- scrape_guardian_article(url)
   df <- rbind(df, output)
+  },silent = TRUE)
 }
 
 # remove NA entries in content and title, ie. videos and audio
@@ -88,6 +90,22 @@ df <- df[!(is.na(df$content) | df$title == ""), ]
 # remove some fluffs
 err1 <- "Show key events onlyPlease turn on JavaScript to use this feature"
 df[] <- lapply(df, gsub, pattern = err1, replacement = "")
+
+#Create dataframs filtered by country
+keywords <- "China|CCP|Beijing|Xi"
+china_df <- df %>% filter(grepl(keywords, content))
+
+keywords <- "Russia|Putin|Moscow|Kremlin"
+russia_df <- df %>% filter(grepl(keywords, content))
+
+keywords <- "States|USA|United States|Obama|White House"
+usa_df <- df %>% filter(grepl(keywords, content))
+
+keywords <- "United Kingdom|UK|Cameron"
+uk_df <- df %>% filter(grepl(keywords, content))
+
+keywords <- "France|Sarkozy"
+france_df <- df %>% filter(grepl(keywords, content))
 
 # save corpus
 save(df, file = "cache/corpus.rds")
